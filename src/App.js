@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const tempMovieData = [
   {
@@ -49,6 +49,8 @@ const tempWatchedData = [
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
+
+const API_KEY = process.env.REACT_APP_OMDB_API_KEY;
 
 function Logo() {
   return (
@@ -195,8 +197,21 @@ function Main({ children }) {
 }
 
 export default function App() {
-  const [movies, setMovies] = useState(tempMovieData);
-  const [watched, setWatched] = useState(tempWatchedData);
+  const [movies, setMovies] = useState([]);
+  const [watched, setWatched] = useState([]);
+  const query = "interstellar";
+
+  async function fetchMovies() {
+    const res = await fetch(
+      `http://www.omdbapi.com/?apikey=${API_KEY}&s=${query}`
+    );
+    const data = await res.json();
+    setMovies(data.Search || []);
+  }
+
+  useEffect(() => {
+    fetchMovies();
+  }, []);
 
   return (
     <>
