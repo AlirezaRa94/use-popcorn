@@ -90,9 +90,9 @@ function Navbar({ children }) {
   );
 }
 
-function Movie({ movie }) {
+function Movie({ movie, onSelectMovie }) {
   return (
-    <li>
+    <li onClick={() => onSelectMovie(movie.imdbID)}>
       <img src={movie.Poster} alt={`${movie.Title} poster`} />
       <h3>{movie.Title}</h3>
       <div>
@@ -105,11 +105,11 @@ function Movie({ movie }) {
   );
 }
 
-function MoviesList({ movies }) {
+function MoviesList({ movies, onSelectMovie }) {
   return (
-    <ul className="list">
+    <ul className="list list-movies">
       {movies?.map((movie) => (
-        <Movie key={movie.imdbID} movie={movie} />
+        <Movie key={movie.imdbID} movie={movie} onSelectMovie={onSelectMovie} />
       ))}
     </ul>
   );
@@ -207,12 +207,34 @@ function ErrorMessage({ message }) {
   );
 }
 
+function MovieDetails({ selectedMovieID, onCloseMovie }) {
+  console.log(selectedMovieID);
+  return (
+    <div className="details">
+      <button className="btn-back" onClick={onCloseMovie}>
+        &larr;
+      </button>
+      <h2>Selected Movie</h2>
+      <p>Selected Movie ID: {selectedMovieID}</p>
+    </div>
+  );
+}
+
 export default function App() {
+  const [query, setQuery] = useState("");
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [query, setQuery] = useState("");
+  const [selectedMovieID, setSelectedMovieID] = useState(null);
+
+  function handleSelectMovie(id) {
+    setSelectedMovieID((curID) => (curID === id ? null : id));
+  }
+
+  function handleCloseMovie() {
+    setSelectedMovieID(null);
+  }
 
   async function fetchMovies(curQuery) {
     try {
@@ -228,8 +250,8 @@ export default function App() {
       if (data.Error) throw new Error(data.Error);
 
       setMovies(data.Search || []);
-    } catch (error) {
-      setError(error.message);
+    } catch (err) {
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -255,12 +277,23 @@ export default function App() {
         <Box>
           {isLoading && <Loader />}
           {error && <ErrorMessage message={error} />}
-          {!isLoading && !error && <MoviesList movies={movies} />}
+          {!isLoading && !error && (
+            <MoviesList movies={movies} onSelectMovie={handleSelectMovie} />
+          )}
         </Box>
 
         <Box>
-          <WatchedSummary watched={watched} />
-          <WatchedMoviesList watched={watched} />
+          {selectedMovieID ? (
+            <MovieDetails
+              selectedMovieID={selectedMovieID}
+              onCloseMovie={handleCloseMovie}
+            />
+          ) : (
+            <>
+              <WatchedSummary watched={watched} />
+              <WatchedMoviesList watched={watched} />
+            </>
+          )}
         </Box>
       </Main>
     </>
