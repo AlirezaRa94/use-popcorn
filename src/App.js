@@ -149,8 +149,8 @@ function WatchedSummary({ watched }) {
 function WatchedMovie({ movie }) {
   return (
     <li>
-      <img src={movie.Poster} alt={`${movie.Title} poster`} />
-      <h3>{movie.Title}</h3>
+      <img src={movie.poster} alt={`${movie.title} poster`} />
+      <h3>{movie.title}</h3>
       <div>
         <p>
           <span>⭐️</span>
@@ -208,10 +208,25 @@ function ErrorMessage({ message }) {
   );
 }
 
-function MovieDetails({ selectedMovieID, onCloseMovie }) {
+function MovieDetails({ selectedMovieID, onCloseMovie, onAddToWatched }) {
   const [movieDetails, setMovieDetails] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  function handleAddToWatched() {
+    const newWatchedMovie = {
+      imdbID: movieDetails.imdbID,
+      title: movieDetails.Title,
+      year: movieDetails.Year,
+      poster: movieDetails.Poster,
+      runtime: parseInt(movieDetails.Runtime),
+      imdbRating: parseFloat(movieDetails.imdbRating),
+      userRating: 0,
+    };
+
+    onAddToWatched(newWatchedMovie);
+    onCloseMovie();
+  }
 
   useEffect(() => {
     async function getMovieDetails() {
@@ -260,6 +275,9 @@ function MovieDetails({ selectedMovieID, onCloseMovie }) {
         <div className="rating">
           <StarRating maxRating={10} size={24} />
         </div>
+        <button className="btn-add" onClick={handleAddToWatched}>
+          +Add to List
+        </button>
         <p>
           <em>{movieDetails.Plot}</em>
         </p>
@@ -292,6 +310,10 @@ export default function App() {
 
   function handleCloseMovie() {
     setSelectedMovieID(null);
+  }
+
+  function handleAddToWatched(movie) {
+    setWatched((prevWatched) => [...prevWatched, movie]);
   }
 
   async function fetchMovies(curQuery) {
@@ -345,6 +367,7 @@ export default function App() {
             <MovieDetails
               selectedMovieID={selectedMovieID}
               onCloseMovie={handleCloseMovie}
+              onAddToWatched={handleAddToWatched}
             />
           ) : (
             <>
