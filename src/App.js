@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import StarRating from "./starRating";
 
 const tempMovieData = [
   {
@@ -208,14 +209,71 @@ function ErrorMessage({ message }) {
 }
 
 function MovieDetails({ selectedMovieID, onCloseMovie }) {
-  console.log(selectedMovieID);
+  const [movieDetails, setMovieDetails] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function getMovieDetails() {
+      try {
+        setIsLoading(true);
+        const res = await fetch(
+          `http://www.omdbapi.com/?apikey=${API_KEY}&i=${selectedMovieID}`
+        );
+        if (!res.ok)
+          throw new Error("Something went wrong while fetching movie!");
+
+        const data = await res.json();
+        setMovieDetails(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    getMovieDetails();
+  }, [selectedMovieID]);
+
+  const moviePoster = (
+    <>
+      <header>
+        <button className="btn-back" onClick={onCloseMovie}>
+          &larr;
+        </button>
+        <img
+          src={movieDetails.Poster}
+          alt={`Poster of ${movieDetails.Title}`}
+        />
+        <div className="details-overview">
+          <h2>{movieDetails.Title}</h2>
+          <p>
+            {movieDetails.Released} &bull; {movieDetails.Runtime}
+          </p>
+          <p>{movieDetails.Genre}</p>
+          <p>
+            <span>⭐️</span>IMDB Rating: <b>{movieDetails.imdbRating}</b>/10
+          </p>
+        </div>
+      </header>
+
+      <section>
+        <div className="rating">
+          <StarRating maxRating={10} size={24} />
+        </div>
+        <p>
+          <em>{movieDetails.Plot}</em>
+        </p>
+        <p>Starring: {movieDetails.Actors}</p>
+        <p>Directed by {movieDetails.Director}</p>
+      </section>
+    </>
+  );
+
   return (
     <div className="details">
-      <button className="btn-back" onClick={onCloseMovie}>
-        &larr;
-      </button>
-      <h2>Selected Movie</h2>
-      <p>Selected Movie ID: {selectedMovieID}</p>
+      {isLoading && <Loader />}
+      {error && <ErrorMessage message={error} />}
+      {!isLoading && !error && moviePoster}
     </div>
   );
 }
