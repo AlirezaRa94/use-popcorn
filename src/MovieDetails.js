@@ -44,6 +44,18 @@ export default function MovieDetails({
   }
 
   useEffect(() => {
+    function closeMovie(e) {
+      if (e.key === "Escape") onCloseMovie();
+    }
+
+    document.addEventListener("keydown", closeMovie);
+
+    return function () {
+      document.removeEventListener("keydown", closeMovie);
+    };
+  }, [onCloseMovie]);
+
+  useEffect(() => {
     async function getMovieDetails() {
       try {
         setIsLoading(true);
