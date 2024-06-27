@@ -52,28 +52,28 @@ export default function App() {
     );
   }
 
-  async function fetchMovies(curQuery) {
-    try {
-      setIsLoading(true);
-      const res = await fetch(
-        `http://www.omdbapi.com/?apikey=${API_KEY}&s=${curQuery}`
-      );
-
-      if (!res.ok)
-        throw new Error("Something went wrong while fetching movies!");
-
-      const data = await res.json();
-      if (data.Error) throw new Error(data.Error);
-
-      setMovies(data.Search || []);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
   useEffect(() => {
+    async function fetchMovies(curQuery) {
+      try {
+        setIsLoading(true);
+        const res = await fetch(
+          `http://www.omdbapi.com/?apikey=${API_KEY}&s=${curQuery}`
+        );
+
+        if (!res.ok)
+          throw new Error("Something went wrong while fetching movies!");
+
+        const data = await res.json();
+        if (data.Error) throw new Error(data.Error);
+
+        setMovies(data.Search || []);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
     setError(null);
     if (query.trim().length < 3) {
       setMovies([]);
