@@ -82,6 +82,8 @@ export default function App() {
       setMovies([]);
       return;
     }
+
+    handleCloseMovie();
     fetchMovies(query);
 
     return function () {
