@@ -165,6 +165,7 @@ function MovieDetails({ selectedMovieID, onCloseMovie, onAddToWatched }) {
   const [movieDetails, setMovieDetails] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [userRating, setUserRating] = useState("");
 
   function handleAddToWatched() {
     const newWatchedMovie = {
@@ -174,7 +175,7 @@ function MovieDetails({ selectedMovieID, onCloseMovie, onAddToWatched }) {
       poster: movieDetails.Poster,
       runtime: parseInt(movieDetails.Runtime),
       imdbRating: parseFloat(movieDetails.imdbRating),
-      userRating: 0,
+      userRating,
     };
 
     onAddToWatched(newWatchedMovie);
@@ -226,11 +227,13 @@ function MovieDetails({ selectedMovieID, onCloseMovie, onAddToWatched }) {
 
       <section>
         <div className="rating">
-          <StarRating maxRating={10} size={24} />
+          <StarRating maxRating={10} size={24} onSetRating={setUserRating} />
+          {userRating && (
+            <button className="btn-add" onClick={handleAddToWatched}>
+              +Add to List
+            </button>
+          )}
         </div>
-        <button className="btn-add" onClick={handleAddToWatched}>
-          +Add to List
-        </button>
         <p>
           <em>{movieDetails.Plot}</em>
         </p>
