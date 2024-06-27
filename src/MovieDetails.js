@@ -64,6 +64,15 @@ export default function MovieDetails({
     getMovieDetails();
   }, [selectedMovieID]);
 
+  useEffect(() => {
+    if (!movieDetails.Title) return;
+    document.title = `Movie | ${movieDetails.Title}`;
+
+    return function () {
+      document.title = "usePopcorn";
+    };
+  }, [movieDetails.Title]);
+
   const moviePoster = (
     <>
       <header>
