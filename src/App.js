@@ -99,7 +99,7 @@ function WatchedSummary({ watched }) {
   );
 }
 
-function WatchedMovie({ movie }) {
+function WatchedMovie({ movie, onDeleteWatched }) {
   return (
     <li>
       <img src={movie.poster} alt={`${movie.title} poster`} />
@@ -117,16 +117,26 @@ function WatchedMovie({ movie }) {
           <span>⏳</span>
           <span>{movie.runtime} min</span>
         </p>
+        <button
+          className="btn-delete"
+          onClick={() => onDeleteWatched(movie.imdbID)}
+        >
+          X
+        </button>
       </div>
     </li>
   );
 }
 
-function WatchedMoviesList({ watched }) {
+function WatchedMoviesList({ watched, onDeleteWatched }) {
   return (
     <ul className="list">
       {watched.map((movie) => (
-        <WatchedMovie key={movie.imdbID} movie={movie} />
+        <WatchedMovie
+          key={movie.imdbID}
+          movie={movie}
+          onDeleteWatched={onDeleteWatched}
+        />
       ))}
     </ul>
   );
@@ -161,11 +171,23 @@ function ErrorMessage({ message }) {
   );
 }
 
-function MovieDetails({ selectedMovieID, onCloseMovie, onAddToWatched }) {
+function MovieDetails({
+  selectedMovieID,
+  onCloseMovie,
+  watchedMovies,
+  onAddToWatched,
+  onRemoveFromWatched,
+}) {
   const [movieDetails, setMovieDetails] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [userRating, setUserRating] = useState("");
+  const isWatched = watchedMovies.some(
+    (movie) => movie.imdbID === selectedMovieID
+  );
+  const prevUserRating =
+    watchedMovies.find((movie) => movie.imdbID === selectedMovieID)
+      ?.userRating || null;
 
   function handleAddToWatched() {
     const newWatchedMovie = {
@@ -179,6 +201,11 @@ function MovieDetails({ selectedMovieID, onCloseMovie, onAddToWatched }) {
     };
 
     onAddToWatched(newWatchedMovie);
+    onCloseMovie();
+  }
+
+  function handleRemoveFromWatched() {
+    onRemoveFromWatched(selectedMovieID);
     onCloseMovie();
   }
 
@@ -227,11 +254,26 @@ function MovieDetails({ selectedMovieID, onCloseMovie, onAddToWatched }) {
 
       <section>
         <div className="rating">
-          <StarRating maxRating={10} size={24} onSetRating={setUserRating} />
-          {userRating && (
-            <button className="btn-add" onClick={handleAddToWatched}>
-              +Add to List
-            </button>
+          {isWatched ? (
+            <>
+              <p>Your Rating: {prevUserRating}</p>
+              <button className="btn-add" onClick={handleRemoveFromWatched}>
+                Remove from List
+              </button>
+            </>
+          ) : (
+            <>
+              <StarRating
+                maxRating={10}
+                size={24}
+                onSetRating={setUserRating}
+              />
+              {userRating && (
+                <button className="btn-add" onClick={handleAddToWatched}>
+                  +Add to List
+                </button>
+              )}
+            </>
           )}
         </div>
         <p>
@@ -270,6 +312,12 @@ export default function App() {
 
   function handleAddToWatched(movie) {
     setWatched((prevWatched) => [...prevWatched, movie]);
+  }
+
+  function handleRemoveFromWatched(id) {
+    setWatched((prevWatched) =>
+      prevWatched.filter((movie) => movie.imdbID !== id)
+    );
   }
 
   async function fetchMovies(curQuery) {
@@ -323,12 +371,17 @@ export default function App() {
             <MovieDetails
               selectedMovieID={selectedMovieID}
               onCloseMovie={handleCloseMovie}
+              watchedMovies={watched}
               onAddToWatched={handleAddToWatched}
+              onRemoveFromWatched={handleRemoveFromWatched}
             />
           ) : (
             <>
               <WatchedSummary watched={watched} />
-              <WatchedMoviesList watched={watched} />
+              <WatchedMoviesList
+                watched={watched}
+                onDeleteWatched={handleRemoveFromWatched}
+              />
             </>
           )}
         </Box>
