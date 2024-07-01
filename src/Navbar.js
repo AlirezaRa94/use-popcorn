@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 
 function Logo() {
   return (
@@ -18,6 +18,12 @@ export function NumResults({ movies }) {
 }
 
 export function SearchBar({ query, setQuery }) {
+  const inputEl = useRef(null);
+
+  useEffect(() => {
+    inputEl.current.focus();
+  }, []);
+
   return (
     <input
       className="search"
@@ -25,6 +31,7 @@ export function SearchBar({ query, setQuery }) {
       placeholder="Search movies..."
       value={query}
       onChange={(e) => setQuery(e.target.value)}
+      ref={inputEl}
     />
   );
 }
