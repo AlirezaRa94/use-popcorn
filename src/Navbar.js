@@ -24,6 +24,23 @@ export function SearchBar({ query, setQuery }) {
     inputEl.current.focus();
   }, []);
 
+  useEffect(() => {
+    function callback(e) {
+      if (document.activeElement === inputEl.current) return;
+
+      if (e.key === "Enter") {
+        inputEl.current.focus();
+        setQuery("");
+      }
+    }
+
+    document.addEventListener("keydown", callback);
+
+    return function () {
+      document.removeEventListener("keydown", callback);
+    };
+  }, [setQuery]);
+
   return (
     <input
       className="search"
