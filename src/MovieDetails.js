@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
 import Loader from "./Loader";
 import ErrorMessage from "./ErrorMessage";
@@ -16,6 +16,9 @@ export default function MovieDetails({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [userRating, setUserRating] = useState("");
+
+  const ratingCount = useRef(0);
+
   const isWatched = watchedMovies.some(
     (movie) => movie.imdbID === selectedMovieID
   );
@@ -32,6 +35,7 @@ export default function MovieDetails({
       runtime: parseInt(movieDetails.Runtime),
       imdbRating: parseFloat(movieDetails.imdbRating),
       userRating,
+      ratingCount: ratingCount.current,
     };
 
     onAddToWatched(newWatchedMovie);
@@ -42,6 +46,11 @@ export default function MovieDetails({
     onRemoveFromWatched(selectedMovieID);
     onCloseMovie();
   }
+
+  useEffect(() => {
+    // Increment rating count only if user has rated the movie
+    if (userRating) ratingCount.current++;
+  }, [userRating]);
 
   useEffect(() => {
     function closeMovie(e) {
