@@ -6,8 +6,7 @@ import { Navbar, NumResults, SearchBar } from "./Navbar";
 import MoviesList from "./MoviesList";
 import WatchedMoviesList from "./WatchedMoviesList";
 import WatchedSummary from "./WatchedSummary";
-
-const API_KEY = process.env.REACT_APP_OMDB_API_KEY;
+import { useMovies } from "./useMovies";
 
 function Box({ children }) {
   const [isOpen, setIsOpen] = useState(true);
@@ -28,13 +27,11 @@ function Main({ children }) {
 
 export default function App() {
   const [query, setQuery] = useState("");
-  const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState(
     () => JSON.parse(localStorage.getItem("watched")) || []
   );
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [selectedMovieID, setSelectedMovieID] = useState(null);
+  const { movies, error, isLoading } = useMovies(query);
 
   function handleSelectMovie(id) {
     setSelectedMovieID((curID) => (curID === id ? null : id));
@@ -57,45 +54,6 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem("watched", JSON.stringify(watched));
   }, [watched]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function fetchMovies(curQuery) {
-      try {
-        setIsLoading(true);
-        const res = await fetch(
-          `http://www.omdbapi.com/?apikey=${API_KEY}&s=${curQuery}`,
-          { signal: controller.signal }
-        );
-
-        if (!res.ok)
-          throw new Error("Something went wrong while fetching movies!");
-
-        const data = await res.json();
-        if (data.Error) throw new Error(data.Error);
-
-        setMovies(data.Search || []);
-      } catch (err) {
-        if (err.name !== "AbortError") setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    setError(null);
-    if (query.trim().length < 3) {
-      setMovies([]);
-      return;
-    }
-
-    handleCloseMovie();
-    fetchMovies(query);
-
-    return function () {
-      controller.abort();
-    };
-  }, [query]);
 
   return (
     <>
