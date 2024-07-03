@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
 import Loader from "./Loader";
 import ErrorMessage from "./ErrorMessage";
+import { useKey } from "./useKey";
 
 const API_KEY = process.env.REACT_APP_OMDB_API_KEY;
 
@@ -18,6 +19,8 @@ export default function MovieDetails({
   const [userRating, setUserRating] = useState("");
 
   const ratingCount = useRef(0);
+
+  useKey("Escape", onCloseMovie);
 
   const isWatched = watchedMovies.some(
     (movie) => movie.imdbID === selectedMovieID
@@ -51,18 +54,6 @@ export default function MovieDetails({
     // Increment rating count only if user has rated the movie
     if (userRating) ratingCount.current++;
   }, [userRating]);
-
-  useEffect(() => {
-    function closeMovie(e) {
-      if (e.key === "Escape") onCloseMovie();
-    }
-
-    document.addEventListener("keydown", closeMovie);
-
-    return function () {
-      document.removeEventListener("keydown", closeMovie);
-    };
-  }, [onCloseMovie]);
 
   useEffect(() => {
     async function getMovieDetails() {

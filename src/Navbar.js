@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { useKey } from "./useKey";
 
 function Logo() {
   return (
@@ -20,26 +21,15 @@ export function NumResults({ movies }) {
 export function SearchBar({ query, setQuery }) {
   const inputEl = useRef(null);
 
+  useKey("Enter", () => {
+    if (document.activeElement === inputEl.current) return;
+    inputEl.current.focus();
+    setQuery("");
+  });
+
   useEffect(() => {
     inputEl.current.focus();
   }, []);
-
-  useEffect(() => {
-    function callback(e) {
-      if (document.activeElement === inputEl.current) return;
-
-      if (e.key === "Enter") {
-        inputEl.current.focus();
-        setQuery("");
-      }
-    }
-
-    document.addEventListener("keydown", callback);
-
-    return function () {
-      document.removeEventListener("keydown", callback);
-    };
-  }, [setQuery]);
 
   return (
     <input
